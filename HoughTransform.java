@@ -72,6 +72,8 @@ public class HoughTransform extends Frame implements ActionListener {
             int[][] g = new int[360][diagonal];
             // insert your implementation for straight-line here.
             int p;
+            int offset = diagonal / 2;
+         
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     Color clr = new Color(source.image.getRGB(x, y));
@@ -81,14 +83,48 @@ public class HoughTransform extends Frame implements ActionListener {
                     if (red == 0 && green == 0 && blue == 0) {
                         for (int i = 0; i < 360; i++) {
                             p = (int) (x * Math.cos(i*Math.PI/180) + y * Math.sin(i*Math.PI/180));
-                            if (p >= 0) {
-                            g[i][p] += 1;
+                            p += offset;
+                            if (p > 0 && p < diagonal) {                               
+                                g[i][p] += 2;
                             }
                         }
                     }
 
                 }
             }
+            // calculate threshold
+            int max = 0;
+            for (int y = 0; y < diagonal; y++) {
+                for (int x = 0; x < 360; x++) {
+                    if (g[x][y] >= max) {
+                        max = g[x][y];
+                    }
+                }
+            }           
+            
+            System.out.println(max);
+            
+            // calulate y = mx + b for 
+            
+            int threshold = Integer.parseInt(texThres.getText());
+            threshold = max -  (max * threshold / 100);
+            
+            System.out.println(threshold);
+            double x, y, m, b;
+            for (int h = 0; h < diagonal; h++) {
+                for (int t = 0; t < 360; t++) {
+                    if (g[t][h] >= threshold) {
+                        x = (h - offset) * Math.cos(t);
+                        y = (h - offset) * Math.sin(t);
+                        m = t + 90;
+                        b = y - (m * Math.PI / 180 * x);
+                        System.out.println(m);
+                    }
+                }
+            } 
+            
+
+            
 
             DisplayTransform(diagonal, 360, g);
         } else if (((Button) e.getSource()).getLabel().equals("Circle Transform")) {
@@ -111,7 +147,6 @@ public class HoughTransform extends Frame implements ActionListener {
                             b = (int) (y - radius * Math.sin(i * Math.PI / 180));
                             if (a >= 0 && a < width && b >= 0 && b < height) {
                                 g[b][a]++;
-                                
                             }
                         }       
                     }
@@ -135,6 +170,7 @@ public class HoughTransform extends Frame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new HoughTransform(args.length == 1 ? args[0] : "HoughCircles3.png");
+        new HoughTransform(args.length == 1 ? args[0] : "rectangle.png");
     }
 }
+
